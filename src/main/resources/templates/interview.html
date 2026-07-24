@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Interview</title>
+
+<link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+	<div class="container">
+
+	    <h1>InterviewAI</h1>
+
+	    <div class="status">
+	        Technical Interview
+	    </div>
+
+	    <p id="progress">
+	        Question 1 of 3
+	    </p>
+
+	    <h2 id="question">
+	        Click Start Interview
+	    </h2>
+
+	    <br>
+
+	    <textarea id="answer" rows="5" placeholder="Your answer will appear here..." readonly></textarea>
+
+	    <br><br>
+
+	    <button id="speakBtn">
+	        Start Interview
+	    </button>
+
+	</div>
+
+<script th:src="@{/js/interview.js}"></script>
+
+</body>
+</html>
