@@ -9,5 +9,4 @@ public interface UserService {
     User getUserByEmail(String email);
 
     User loginUser(String email, String password);
-
 }
