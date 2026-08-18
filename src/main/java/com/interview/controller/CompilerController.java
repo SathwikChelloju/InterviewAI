@@ -15,7 +15,7 @@ import com.interview.service.CompilerService;
 @CrossOrigin(origins = {
         "http://127.0.0.1:5500",
         "http://localhost:5500",
-        "https://YOUR-FRONTEND.onrender.com"
+        "https://interviewai-frontend-zh92.onrender.com"
 })
 public class CompilerController {
 
