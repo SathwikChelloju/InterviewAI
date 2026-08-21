@@ -24,25 +24,37 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDTO> registerUser(
+    public ResponseEntity<?> registerUser(
             @RequestBody RegisterRequestDTO request) {
 
-        User user = new User();
+        try {
 
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+            User user = new User();
 
-        User savedUser = userService.registerUser(user);
+            user.setName(request.getName());
+            user.setEmail(request.getEmail());
+            user.setPassword(request.getPassword());
 
-        UserResponseDTO response = new UserResponseDTO(
-                savedUser.getId(),
-                savedUser.getName(),
-                savedUser.getEmail(),
-                savedUser.getRole()
-        );
+            User savedUser = userService.registerUser(user);
 
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+            UserResponseDTO response = new UserResponseDTO(
+                    savedUser.getId(),
+                    savedUser.getName(),
+                    savedUser.getEmail(),
+                    savedUser.getRole()
+            );
+
+            return new ResponseEntity<>(
+                    response,
+                    HttpStatus.CREATED
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(e.getMessage());
+        }
     }
 
     @PostMapping("/login")

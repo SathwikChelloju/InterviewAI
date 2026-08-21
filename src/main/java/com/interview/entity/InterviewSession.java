@@ -31,6 +31,21 @@ public class InterviewSession {
 
     private Integer questionCount;
     
+    @Column(
+    	    name = "report_json",
+    	    columnDefinition = "LONGTEXT"
+    	)
+    	private String reportJson;
+    
+    public String getReportJson() {
+        return reportJson;
+    }
+
+
+    public void setReportJson(String reportJson) {
+        this.reportJson = reportJson;
+    }
+    
     public String getTechnology() {
 		return technology;
 	}

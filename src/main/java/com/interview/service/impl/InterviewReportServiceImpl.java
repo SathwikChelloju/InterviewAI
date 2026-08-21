@@ -4,197 +4,244 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.interview.dto.interview.InterviewReport;
 import com.interview.dto.interview.QuestionEvaluationDto;
 import com.interview.entity.InterviewAnswer;
+import com.interview.entity.InterviewSession;
 import com.interview.repository.InterviewAnswerRepository;
+import com.interview.repository.InterviewSessionRepository;
 import com.interview.service.GroqService;
 import com.interview.service.InterviewReportService;
 
-import com.interview.entity.InterviewSession;
-import com.interview.repository.InterviewSessionRepository;
 
 @Service
 public class InterviewReportServiceImpl implements InterviewReportService {
 
+
     @Autowired
     private InterviewAnswerRepository answerRepository;
+
 
     @Autowired
     private GroqService groqService;
 
+
     @Autowired
     private ObjectMapper objectMapper;
 
+
     @Autowired
     private InterviewSessionRepository sessionRepository;
-    
+
+
+
     @Override
+    @Transactional
     public InterviewReport generateReport(Long interviewId) {
 
+
+        System.out.println(
+                "========== GENERATE REPORT START =========="
+        );
+
+        System.out.println(
+                "Interview ID = " + interviewId
+        );
+
+
         // ==========================================
-        // 1. GET INTERVIEW SESSION
+        // 1. GET SESSION
         // ==========================================
 
         InterviewSession session =
                 sessionRepository.findById(interviewId)
-                        .orElseThrow(() ->
-                                new RuntimeException("Interview not found"));
+                .orElseThrow(() ->
+                        new RuntimeException("Interview not found")
+                );
+
+
+        System.out.println(
+                "Existing report json = "
+                + session.getReportJson()
+        );
 
 
         // ==========================================
-        // 2. GET ALL ANSWERS
+        // 2. RETURN EXISTING REPORT
         // ==========================================
 
-        List<InterviewAnswer> answers =
-                answerRepository
-                        .findByInterviewSessionIdOrderByQuestionNumber(interviewId);
+        if(session.getReportJson() != null &&
+           !session.getReportJson().isBlank()) {
 
 
-        // ==========================================
-        // 3. CHECK INTERVIEW COMPLETION
-        // ==========================================
+            try {
 
-        if (answers.size() != session.getQuestionCount()) {
-
-            throw new RuntimeException(
-                    "Interview is incomplete."
-            );
-        }
+                System.out.println(
+                        "Returning saved report"
+                );
 
 
-        for (InterviewAnswer answer : answers) {
+                return objectMapper.readValue(
+                        session.getReportJson(),
+                        InterviewReport.class
+                );
 
-            if (answer.getAnswer() == null ||
-                    answer.getAnswer().isBlank()) {
+
+            } catch(Exception e){
 
                 throw new RuntimeException(
-                        "Interview is incomplete."
+                        "Invalid saved report"
                 );
             }
         }
 
 
+
         // ==========================================
-        // 4. BUILD AI REPORT PROMPT
+        // 3. FETCH ANSWERS
         // ==========================================
 
-        StringBuilder prompt = new StringBuilder();
 
-        prompt.append("""
-                You are a Senior Technical Interviewer.
-
-                Below are the interview questions, candidate answers,
-                AI feedback and scores.
-
-                Generate a detailed interview performance report.
-
-                """);
+        List<InterviewAnswer> answers =
+                answerRepository
+                .findByInterviewSessionIdOrderByQuestionNumber(
+                        interviewId
+                );
 
 
-        for (InterviewAnswer answer : answers) {
-
-            prompt.append("""
-                    
-                    Question:
-                    """)
-                    .append(answer.getQuestion())
-                    .append("\n\n");
+        System.out.println(
+                "Answer count = "
+                + answers.size()
+        );
 
 
-            prompt.append("""
-                    Candidate Answer:
-                    """)
-                    .append(answer.getAnswer())
-                    .append("\n\n");
+        System.out.println(
+                "Expected count = "
+                + session.getQuestionCount()
+        );
 
 
-            prompt.append("""
-                    Feedback:
-                    """)
-                    .append(answer.getFeedback())
-                    .append("\n\n");
+
+        // ==========================================
+        // 4. COMPLETION CHECK
+        // ==========================================
 
 
-            prompt.append("""
-                    Score:
-                    """)
-                    .append(answer.getScore())
-                    .append("\n\n");
+        if(answers.size() < session.getQuestionCount()) {
+
+
+            throw new RuntimeException(
+                    "Interview is incomplete."
+            );
+
         }
 
 
-        prompt.append("""
-                
-                Generate a complete interview report.
 
-                Return ONLY valid JSON.
-
-                {
-                  "overallScore":0,
-                  "percentage":0,
-                  "technicalKnowledge":0,
-                  "communication":0,
-                  "problemSolving":0,
-                  "strengths":[
-                    ""
-                  ],
-                  "weaknesses":[
-                    ""
-                  ],
-                  "recommendation":""
-                }
-
-                Rules:
-
-                - overallScore must be between 0 and 100.
-                - percentage must be between 0 and 100.
-                - technicalKnowledge must be between 0 and 100.
-                - communication must be between 0 and 100.
-                - problemSolving must be between 0 and 100.
-                - strengths must contain meaningful observations.
-                - weaknesses must contain meaningful observations.
-                - recommendation must be useful to the candidate.
-                - Return ONLY JSON.
-                - Do not use markdown.
-                - Do not explain anything outside the JSON.
-
-                """);
+        for(InterviewAnswer answer : answers){
 
 
-        // ==========================================
-        // 5. CALL GROQ
-        // ==========================================
+            if(answer.getAnswer()==null ||
+               answer.getAnswer().isBlank()){
+
+
+                throw new RuntimeException(
+                        "Interview is incomplete."
+                );
+
+            }
+
+        }
+
+
 
         try {
 
+
+            // ==========================================
+            // 5. BUILD PROMPT
+            // ==========================================
+
+
+            StringBuilder prompt =
+                    new StringBuilder();
+
+
+            prompt.append("""
+                    
+                    You are a Senior Technical Interviewer.
+
+                    Generate interview performance report.
+
+                    Return ONLY JSON.
+
+                    {
+                    "overallScore":0,
+                    "percentage":0,
+                    "technicalKnowledge":0,
+                    "communication":0,
+                    "problemSolving":0,
+                    "strengths":[],
+                    "weaknesses":[],
+                    "recommendation":""
+                    }
+
+                    """);
+
+
+
+            for(InterviewAnswer answer: answers){
+
+
+                prompt.append("\nQuestion:\n")
+                .append(answer.getQuestion());
+
+
+                prompt.append("\nAnswer:\n")
+                .append(answer.getAnswer());
+
+
+                prompt.append("\nFeedback:\n")
+                .append(answer.getFeedback());
+
+
+                prompt.append("\nScore:\n")
+                .append(answer.getScore());
+
+            }
+
+
+
+            // ==========================================
+            // 6. CALL GROQ
+            // ==========================================
+
+
             String response =
-                    groqService.generateResponse(prompt.toString());
+                    groqService.generateResponse(
+                            prompt.toString()
+                    );
 
 
-            response = response
-                    .replaceAll("(?s)^```json\\s*", "")
-                    .replaceAll("(?s)^```\\s*", "")
-                    .replaceAll("\\s*```$", "")
+
+            response =
+                    response
+                    .replaceAll("```json","")
+                    .replaceAll("```","")
                     .trim();
 
 
+
             System.out.println(
-                    "========== INTERVIEW REPORT AI RESPONSE =========="
+                    "========== AI RESPONSE =========="
             );
 
             System.out.println(response);
 
-            System.out.println(
-                    "==================================================="
-            );
 
-
-            // ==========================================
-            // 6. CONVERT AI RESPONSE TO DTO
-            // ==========================================
 
             InterviewReport report =
                     objectMapper.readValue(
@@ -203,136 +250,160 @@ public class InterviewReportServiceImpl implements InterviewReportService {
                     );
 
 
-            // ==========================================
-            // 7. SAVE SCORE TO SESSION
-            // ==========================================
-
-            session.setOverallScore(
-                    report.getOverallScore()
-            );
-
-            session.setPercentage(
-                    report.getPercentage()
-            );
-
-            sessionRepository.save(session);
-
 
             // ==========================================
-            // 8. ADD INTERVIEW INFORMATION
+            // 7. ADD DETAILS
             // ==========================================
+
 
             report.setInterviewId(
                     session.getId()
             );
 
+
             report.setTechnology(
                     session.getTechnology()
             );
+
 
             report.setInterviewType(
                     session.getInterviewType()
             );
 
+
             report.setLevel(
                     session.getLevel()
             );
+
 
             report.setQuestionCount(
                     session.getQuestionCount()
             );
 
 
+
             // ==========================================
-            // 9. BUILD QUESTION-WISE REPORT
+            // 8. QUESTION REPORT
             // ==========================================
+
 
             List<QuestionEvaluationDto> questionReports =
                     new java.util.ArrayList<>();
 
 
-            for (InterviewAnswer answer : answers) {
+            for(InterviewAnswer answer: answers){
 
-                QuestionEvaluationDto questionReport =
+
+                QuestionEvaluationDto dto =
                         new QuestionEvaluationDto();
 
 
-                questionReport.setQuestionNumber(
+                dto.setQuestionNumber(
                         answer.getQuestionNumber()
                 );
 
 
-                questionReport.setQuestion(
+                dto.setQuestion(
                         answer.getQuestion()
                 );
 
 
-                questionReport.setAnswer(
+                dto.setAnswer(
                         answer.getAnswer()
                 );
 
 
-                questionReport.setScore(
+                dto.setScore(
                         answer.getScore()
                 );
 
 
-                questionReport.setFeedback(
+                dto.setFeedback(
                         answer.getFeedback()
                 );
 
 
-                questionReport.setIdealAnswer(
+                dto.setIdealAnswer(
                         answer.getIdealAnswer()
                 );
 
 
-//                questionReport.setCorrectCode(
-//                        answer.getCorrectCode()
-//                );
-//
-//
-//                questionReport.setCodeExplanation(
-//                        answer.getCodeExplanation()
-//                );
-//
-//
-//                questionReport.setTimeComplexity(
-//                        answer.getTimeComplexity()
-//                );
-//
-//
-//                questionReport.setSpaceComplexity(
-//                        answer.getSpaceComplexity()
-//                );
+                questionReports.add(dto);
 
-
-                questionReports.add(
-                        questionReport
-                );
             }
 
 
-            report.setQuestions(
-                    questionReports
+            report.setQuestions(questionReports);
+
+
+
+            // ==========================================
+            // 9. SAVE JSON
+            // ==========================================
+
+
+            String savedJson =
+                    objectMapper.writeValueAsString(report);
+
+
+
+            System.out.println(
+                    "Saving JSON length = "
+                    + savedJson.length()
             );
 
 
-            // ==========================================
-            // 10. RETURN COMPLETE REPORT
-            // ==========================================
+            System.out.println(
+                    "Saving Interview ID = "
+                    + session.getId()
+            );
+
+
+
+            // VERY IMPORTANT
+            session.setReportJson(savedJson);
+
+
+
+            session.setOverallScore(
+                    report.getOverallScore()
+            );
+
+
+            session.setPercentage(
+                    report.getPercentage()
+            );
+
+
+
+            sessionRepository.saveAndFlush(session);
+
+
+
+            System.out.println(
+                    "========== REPORT SAVED =========="
+            );
+
+
 
             return report;
 
 
-        } catch (Exception e) {
+
+        }
+        catch(Exception e){
+
 
             e.printStackTrace();
+
 
             throw new RuntimeException(
                     "Failed to generate interview report",
                     e
             );
+
         }
+
     }
+
 }
