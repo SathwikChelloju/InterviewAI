@@ -1,5 +1,7 @@
 package com.interview.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,6 +25,12 @@ public class User {
     private String password;
 
     private String role;
+    
+    private boolean verified = false;
+
+    private String verificationCode;
+    
+    private LocalDateTime verificationExpiry;
 
     public User() {
     }
@@ -34,11 +42,36 @@ public class User {
         this.password = password;
         this.role = role;
     }
+    
+    
+    
+    public boolean isVerified() {
+		return verified;
+	}
 
-    public Long getId() {
+	public void setVerified(boolean verified) {
+		this.verified = verified;
+	}
+
+	public String getVerificationCode() {
+		return verificationCode;
+	}
+
+	public void setVerificationCode(String verificationCode) {
+		this.verificationCode = verificationCode;
+	}
+
+	public Long getId() {
         return id;
     }
+	public LocalDateTime getVerificationExpiry() {
+	    return verificationExpiry;
+	}
 
+
+	public void setVerificationExpiry(LocalDateTime verificationExpiry) {
+	    this.verificationExpiry = verificationExpiry;
+	}
     public void setId(Long id) {
         this.id = id;
     }

@@ -9,4 +9,9 @@ public interface UserService {
     User getUserByEmail(String email);
 
     User loginUser(String email, String password);
+    
+    boolean verifyUser(String email, String code);
+    
+    boolean resendVerificationCode(String email);
+    
 }

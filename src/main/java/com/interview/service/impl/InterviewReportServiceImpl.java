@@ -13,6 +13,7 @@ import com.interview.entity.InterviewAnswer;
 import com.interview.entity.InterviewSession;
 import com.interview.repository.InterviewAnswerRepository;
 import com.interview.repository.InterviewSessionRepository;
+import com.interview.service.EmailService;
 import com.interview.service.GroqService;
 import com.interview.service.InterviewReportService;
 
@@ -35,6 +36,9 @@ public class InterviewReportServiceImpl implements InterviewReportService {
 
     @Autowired
     private InterviewSessionRepository sessionRepository;
+    
+    @Autowired
+    private EmailService emailService;
 
 
 
@@ -74,29 +78,46 @@ public class InterviewReportServiceImpl implements InterviewReportService {
         // ==========================================
 
         if(session.getReportJson() != null &&
-           !session.getReportJson().isBlank()) {
+        		   !session.getReportJson().isBlank()) {
 
 
-            try {
+        		    try {
 
-                System.out.println(
-                        "Returning saved report"
-                );
-
-
-                return objectMapper.readValue(
-                        session.getReportJson(),
-                        InterviewReport.class
-                );
+        		        InterviewReport existingReport =
+        		                objectMapper.readValue(
+        		                        session.getReportJson(),
+        		                        InterviewReport.class
+        		                );
 
 
-            } catch(Exception e){
+        		        if(!session.isReportEmailSent()
+        		                && session.getUser()!=null) {
 
-                throw new RuntimeException(
-                        "Invalid saved report"
-                );
-            }
-        }
+
+        		            emailService.sendInterviewReport(
+        		                    session.getUser().getEmail(),
+        		                    existingReport
+        		            );
+
+
+        		            session.setReportEmailSent(true);
+
+        		            sessionRepository.saveAndFlush(session);
+
+        		        }
+
+
+        		        return existingReport;
+
+
+        		    } catch(Exception e){
+
+        		        throw new RuntimeException(
+        		                "Invalid saved report"
+        		        );
+
+        		    }
+        		}
 
 
 
@@ -360,23 +381,59 @@ public class InterviewReportServiceImpl implements InterviewReportService {
 
 
 
-            // VERY IMPORTANT
-            session.setReportJson(savedJson);
+         // ==========================================
+         // SAVE REPORT JSON
+         // ==========================================
+
+         session.setReportJson(savedJson);
 
 
-
-            session.setOverallScore(
-                    report.getOverallScore()
-            );
-
-
-            session.setPercentage(
-                    report.getPercentage()
-            );
+         session.setOverallScore(
+                 report.getOverallScore()
+         );
 
 
+         session.setPercentage(
+                 report.getPercentage()
+         );
 
-            sessionRepository.saveAndFlush(session);
+
+         // ==========================================
+         // SEND REPORT EMAIL ONLY ONCE
+         // ==========================================
+
+         if(!session.isReportEmailSent()) {
+
+
+             if(session.getUser() != null) {
+
+
+                 emailService.sendInterviewReport(
+                         session.getUser().getEmail(),
+                         report
+                 );
+
+
+                 session.setReportEmailSent(true);
+
+
+                 System.out.println(
+                         "Interview report email sent successfully"
+                 );
+
+
+             } else {
+
+                 System.out.println(
+                         "User not found. Email not sent"
+                 );
+
+             }
+
+         }
+
+
+         sessionRepository.saveAndFlush(session);
 
 
 

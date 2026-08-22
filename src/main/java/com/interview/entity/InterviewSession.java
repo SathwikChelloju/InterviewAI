@@ -37,6 +37,17 @@ public class InterviewSession {
     	)
     	private String reportJson;
     
+    private boolean reportEmailSent = false;
+    
+    public boolean isReportEmailSent() {
+        return reportEmailSent;
+    }
+
+
+    public void setReportEmailSent(boolean reportEmailSent) {
+        this.reportEmailSent = reportEmailSent;
+    }
+    
     public String getReportJson() {
         return reportJson;
     }
