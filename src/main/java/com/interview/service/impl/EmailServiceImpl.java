@@ -40,11 +40,9 @@ public class EmailServiceImpl implements EmailService {
 
             helper.setFrom("interviewmate310@gmail.com");
 
+            helper.setFrom("b65989001@smtp-brevo.com");
             helper.setTo(email);
-
-            helper.setSubject(
-                    "InterviewMate Email Verification"
-            );
+            helper.setSubject("InterviewMate Email Verification");
 
 
             String htmlContent = """
