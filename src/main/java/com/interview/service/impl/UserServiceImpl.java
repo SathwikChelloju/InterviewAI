@@ -82,29 +82,49 @@ public class UserServiceImpl implements UserService {
     @Override
     public User loginUser(String email, String password) {
 
+        System.out.println("========== LOGIN DEBUG ==========");
+        System.out.println("Incoming Email : " + email);
+        System.out.println("Incoming Password : " + password);
+
+
         User user = userRepository.findByEmail(email).orElse(null);
 
 
-        if (user == null) {
+        if(user == null) {
+
+            System.out.println("USER NOT FOUND");
             return null;
         }
 
 
-        // Check whether email is verified
-        if (!user.isVerified()) {
+        System.out.println("USER FOUND");
+        System.out.println("DB Email : " + user.getEmail());
+        System.out.println("DB Password : " + user.getPassword());
+        System.out.println("Verified : " + user.isVerified());
+
+
+        if(!user.isVerified()) {
+
+            System.out.println("EMAIL NOT VERIFIED");
 
             throw new IllegalArgumentException(
-                    "Please verify your email before login"
+                "Please verify your email before login"
             );
         }
 
 
-        // Check password
-        if (passwordEncoder.matches(
-                password,
-                user.getPassword()
-        )) {
+        boolean passwordMatch =
+                passwordEncoder.matches(
+                        password,
+                        user.getPassword()
+                );
 
+
+        System.out.println("PASSWORD MATCH : " + passwordMatch);
+        System.out.println("================================");
+
+
+        if(passwordMatch) {
             return user;
         }
 
