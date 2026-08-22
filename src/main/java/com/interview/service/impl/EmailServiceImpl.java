@@ -62,7 +62,11 @@ public class EmailServiceImpl implements EmailService {
 
             System.out.println("Sending OTP email...");
 
+            System.out.println("Connecting to Brevo...");
+
             mailSender.send(message);
+
+            System.out.println("OTP EMAIL SENT SUCCESSFULLY");
 
 
             System.out.println("OTP email sent successfully");
