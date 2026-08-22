@@ -37,9 +37,9 @@ public class EmailServiceImpl implements EmailService {
                     );
 
             // Using the verified email address and professional display name
-            helper.setFrom("interviewmate310@gmail.com", "InterviewAI");
+            helper.setFrom("interviewmate310@gmail.com", "InterviewMate");
             helper.setTo(email);
-            helper.setSubject("InterviewAI Email Verification");
+            helper.setSubject("InterviewMate Email Verification");
 
             // The full premium HTML template
             String htmlContent = """
@@ -48,7 +48,7 @@ public class EmailServiceImpl implements EmailService {
                     <head>
                       <meta charset="utf-8">
                       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                      <title>InterviewAI - OTP Verification</title>
+                      <title>InterviewMate - OTP Verification</title>
                     </head>
                     <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f5f7;">
                       
@@ -61,7 +61,7 @@ public class EmailServiceImpl implements EmailService {
                               <tr>
                                 <td style="background-color: #4f46e5; padding: 35px 20px; text-align: center;">
                                   <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">
-                                    InterviewAI
+                                    InterviewMate
                                   </h1>
                                   <p style="color: #c7d2fe; margin: 8px 0 0 0; font-size: 13px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase;">
                                     Intelligent Interview Practice
@@ -75,7 +75,7 @@ public class EmailServiceImpl implements EmailService {
                                     OTP Verification
                                   </h2>
                                   <p style="color: #9ca3af; margin: 0 0 35px 0; font-size: 15px; line-height: 1.6;">
-                                    Thank you for joining <strong style="color: #ffffff;">InterviewAI</strong>. Please use the OTP below to complete your email verification.
+                                    Thank you for joining <strong style="color: #ffffff;">InterviewMate</strong>. Please use the OTP below to complete your email verification.
                                   </p>
 
                                   <div style="background-color: rgba(99, 102, 241, 0.1); border: 2px solid #6366f1; border-radius: 12px; padding: 25px; margin: 0 auto; max-width: 320px;">
@@ -93,7 +93,7 @@ public class EmailServiceImpl implements EmailService {
                               <tr>
                                 <td style="background-color: #050816; padding: 25px 20px; text-align: center; border-top: 1px solid #1f2937;">
                                   <p style="color: #6b7280; margin: 0; font-size: 12px;">
-                                    &copy; 2026 <strong style="color: #9ca3af;">InterviewAI</strong> &bull; Master the technical interview
+                                    &copy; 2026 <strong style="color: #9ca3af;">InterviewMate</strong> &bull; Master the technical interview
                                   </p>
                                 </td>
                               </tr>
@@ -151,10 +151,10 @@ public class EmailServiceImpl implements EmailService {
                     );
 
             // Added professional display name here as well!
-            helper.setFrom("interviewmate310@gmail.com", "InterviewAI");
+            helper.setFrom("interviewmate310@gmail.com", "InterviewMate");
             helper.setTo(email);
             helper.setSubject(
-                    "InterviewAI - Your Interview Performance Report"
+                    "InterviewMate - Your Interview Performance Report"
             );
 
             String htmlContent = """
@@ -177,7 +177,7 @@ public class EmailServiceImpl implements EmailService {
             ">
 
             <h1 style="color:#6366f1;">
-            InterviewAI
+            InterviewMate
             </h1>
 
             <h2>
@@ -242,7 +242,7 @@ public class EmailServiceImpl implements EmailService {
             <br>
 
             <p>
-            Thank you for using InterviewAI.
+            Thank you for using InterviewMate.
             </p>
 
             </div>
