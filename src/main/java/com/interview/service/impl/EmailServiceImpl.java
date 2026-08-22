@@ -101,7 +101,7 @@ public class EmailServiceImpl implements EmailService {
 
             mailSender.send(message);
 
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             System.err.println("Failed to send HTML verification email: " + e.getMessage());
             // You can also throw a custom exception here depending on your error handling logic
         }
